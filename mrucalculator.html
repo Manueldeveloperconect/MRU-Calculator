@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de MRUA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            margin-top: 20px !important;
+        }
+
+        .input-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s;
+        }
+
+        .input-group:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .variable-symbol {
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .unit {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-clear {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #5a6268;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            padding: 12px;
+            margin: 10px 0;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .result-label {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .result-value {
+            font-size: 1.2em;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .formulas {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #ffc107;
+            margin-top: 30px;
+        }
+
+        .formulas h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .formula-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #f5c6cb;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 2px solid #bee5eb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Calculadora de MRUA</h1>
+        <p class="subtitle">Movimiento Rectilíneo Uniformemente Acelerado</p>
+        <p class="subtitle">Programado por Pantoja Gaona Jose Manuel 5° AM PRO</p>
+
+        <div class="info-box">
+            <strong>💡 Instrucciones:</strong> Ingresa al menos 3 valores conocidos y el sistema calculará las demás variables automáticamente.
+        </div>
+
+        <div class="calculator-grid">
+            <div class="input-group">
+                <label><span class="variable-symbol">v₀</span> - Velocidad Inicial</label>
+                <input type="number" id="v0" step="any" placeholder="Ej: 10">
+                <div class="unit">Unidad: m/s</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">vf</span> - Velocidad Final</label>
+                <input type="number" id="vf" step="any" placeholder="Ej: 20">
+                <div class="unit">Unidad: m/s</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">a</span> - Aceleración</label>
+                <input type="number" id="a" step="any" placeholder="Ej: 2">
+                <div class="unit">Unidad: m/s²</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">t</span> - Tiempo</label>
+                <input type="number" id="t" step="any" placeholder="Ej: 5">
+                <div class="unit">Unidad: s</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">d</span> - Distancia/Desplazamiento</label>
+                <input type="number" id="d" step="any" placeholder="Ej: 50">
+                <div class="unit">Unidad: m</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">m</span> - Masa</label>
+                <input type="number" id="m" step="any" placeholder="Ej: 10">
+                <div class="unit">Unidad: kg</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">F</span> - Fuerza</label>
+                <input type="number" id="F" step="any" placeholder="Ej: 20">
+                <div class="unit">Unidad: N (Newtons)</div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="variable-symbol">θ</span> - Ángulo de inclinación</label>
+                <input type="number" id="theta" step="any" placeholder="Ej: 30">
+                <div class="unit">Unidad: grados (°)</div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-calculate" onclick="calcular()">🧮 Calcular</button>
+            <button class="btn-clear" onclick="limpiar()">🗑️ Limpiar</button>
+        </div>
+
+        <div class="error" id="error"></div>
+        <div class="results" id="results"></div>
+
+        <div class="formulas">
+            <h3>📐 Ecuaciones del MRUA</h3>
+            <div class="formula-item">1. vf = v₀ + a·t</div>
+            <div class="formula-item">2. d = v₀·t + ½·a·t²</div>
+            <div class="formula-item">3. vf² = v₀² + 2·a·d</div>
+            <div class="formula-item">4. d = (v₀ + vf)·t / 2</div>
+            <div class="formula-item">5. F = m·a (Segunda Ley de Newton)</div>
+            <div class="formula-item">6. P = m·g (Peso, donde g ≈ 9.8 m/s²)</div>
+            <div class="formula-item">7. a = g·sen(θ) (Aceleración en plano inclinado)</div>
+        </div>
+    </div>
+
+    <script>
+        // Constante de gravedad terrestre
+        const g = 9.8; // m/s²
+
+        function calcular() {
+            // Ocultar mensajes previos
+            document.getElementById('error').classList.remove('show');
+            document.getElementById('results').classList.remove('show');
+
+            // Obtener valores de los inputs y convertirlos a números
+            // parseFloat convierte el texto del input en un número decimal
+            // Si el campo está vacío, devuelve null
+            let v0 = parseFloat(document.getElementById('v0').value) || null;
+            let vf = parseFloat(document.getElementById('vf').value) || null;
+            let a = parseFloat(document.getElementById('a').value) || null;
+            let t = parseFloat(document.getElementById('t').value) || null;
+            let d = parseFloat(document.getElementById('d').value) || null;
+            let m = parseFloat(document.getElementById('m').value) || null;
+            let F = parseFloat(document.getElementById('F').value) || null;
+            let theta = parseFloat(document.getElementById('theta').value) || null;
+
+            // Objeto para almacenar todos los resultados calculados
+            let resultados = {
+                v0: v0,
+                vf: vf,
+                a: a,
+                t: t,
+                d: d,
+                m: m,
+                F: F,
+                theta: theta,
+                peso: null,
+                aInclinada: null
+            };
+
+            // CÁLCULOS CON FUERZA Y MASA
+            // Si tenemos fuerza y masa, podemos calcular aceleración usando F = m·a
+            if (F !== null && m !== null && a === null) {
+                // Despejamos: a = F / m
+                resultados.a = F / m;
+                a = resultados.a;
+            }
+            // Si tenemos masa y aceleración, podemos calcular fuerza
+            else if (m !== null && a !== null && F === null) {
+                // F = m·a
+                resultados.F = m * a;
+                F = resultados.F;
+            }
+            // Si tenemos fuerza y aceleración, podemos calcular masa
+            else if (F !== null && a !== null && m === null) {
+                // Despejamos: m = F / a
+                resultados.m = F / a;
+                m = resultados.m;
+            }
+
+            // CÁLCULO DEL PESO
+            // El peso es la fuerza gravitacional: P = m·g
+            if (m !== null) {
+                resultados.peso = m * g;
+            }
+
+            // CÁLCULO EN PLANO INCLINADO
+            // Si tenemos un ángulo, calculamos la aceleración en el plano inclinado
+            // a = g·sen(θ)
+            if (theta !== null) {
+                // Convertir el ángulo de grados a radianes
+                // Radianes = Grados × (π / 180)
+                let thetaRad = theta * Math.PI / 180;
+                // Calcular la aceleración en el plano inclinado
+                resultados.aInclinada = g * Math.sin(thetaRad);
+                
+                // Si no hay aceleración definida, usar la del plano inclinado
+                if (a === null) {
+                    resultados.a = resultados.aInclinada;
+                    a = resultados.a;
+                }
+            }
+
+            // ECUACIONES DEL MRUA
+            // Intentamos calcular las variables faltantes usando las ecuaciones cinemáticas
+            
+            // Variable para controlar si se hizo algún cálculo
+            let calculoRealizado = false;
+
+            // Intentar hasta 5 iteraciones para resolver todas las ecuaciones posibles
+            // Esto permite que si calculamos una variable, podamos usarla para calcular otras
+            for (let i = 0; i < 5; i++) {
+                let cambio = false;
+
+                // ECUACIÓN 1: vf = v0 + a·t
+                // Podemos calcular cualquier variable si tenemos las otras 3
+                if (v0 !== null && a !== null && t !== null && vf === null) {
+                    resultados.vf = v0 + a * t;
+                    vf = resultados.vf;
+                    cambio = true;
+                }
+                else if (vf !== null && a !== null && t !== null && v0 === null) {
+                    // Despejamos: v0 = vf - a·t
+                    resultados.v0 = vf - a * t;
+                    v0 = resultados.v0;
+                    cambio = true;
+                }
+                else if (v0 !== null && vf !== null && t !== null && a === null) {
+                    // Despejamos: a = (vf - v0) / t
+                    if (t !== 0) {
+                        resultados.a = (vf - v0) / t;
+                        a = resultados.a;
+                        cambio = true;
+                    }
+                }
+                else if (v0 !== null && vf !== null && a !== null && t === null) {
+                    // Despejamos: t = (vf - v0) / a
+                    if (a !== 0) {
+                        resultados.t = (vf - v0) / a;
+                        t = resultados.t;
+                        cambio = true;
+                    }
+                }
+
+                // ECUACIÓN 2: d = v0·t + ½·a·t²
+                if (v0 !== null && a !== null && t !== null && d === null) {
+                    resultados.d = v0 * t + 0.5 * a * t * t;
+                    d = resultados.d;
+                    cambio = true;
+                }
+                // Para despejar v0, a o t de esta ecuación es más complejo
+                // Despeje de v0: v0 = (d - ½·a·t²) / t
+                else if (d !== null && a !== null && t !== null && t !== 0 && v0 === null) {
+                    resultados.v0 = (d - 0.5 * a * t * t) / t;
+                    v0 = resultados.v0;
+                    cambio = true;
+                }
+                // Despeje de a: a = 2·(d - v0·t) / t²
+                else if (d !== null && v0 !== null && t !== null && t !== 0 && a === null) {
+                    resultados.a = (2 * (d - v0 * t)) / (t * t);
+                    a = resultados.a;
+                    cambio = true;
+                }
+
+                // ECUACIÓN 3: vf² = v0² + 2·a·d
+                // Esta ecuación relaciona velocidades, aceleración y distancia sin tiempo
+                if (v0 !== null && a !== null && d !== null && vf === null) {
+                    let vf2 = v0 * v0 + 2 * a * d;
+                    if (vf2 >= 0) {
+                        resultados.vf = Math.sqrt(vf2);
+                        vf = resultados.vf;
+                        cambio = true;
+                    }
+                }
+                else if (vf !== null && a !== null && d !== null && v0 === null) {
+                    // Despejamos: v0² = vf² - 2·a·d
+                    let v02 = vf * vf - 2 * a * d;
+                    if (v02 >= 0) {
+                        resultados.v0 = Math.sqrt(v02);
+                        v0 = resultados.v0;
+                        cambio = true;
+                    }
+                }
+                else if (v0 !== null && vf !== null && d !== null && d !== 0 && a === null) {
+                    // Despejamos: a = (vf² - v0²) / (2·d)
+                    resultados.a = (vf * vf - v0 * v0) / (2 * d);
+                    a = resultados.a;
+                    cambio = true;
+                }
+                else if (v0 !== null && vf !== null && a !== null && a !== 0 && d === null) {
+                    // Despejamos: d = (vf² - v0²) / (2·a)
+                    resultados.d = (vf * vf - v0 * v0) / (2 * a);
+                    d = resultados.d;
+                    cambio = true;
+                }
+
+                // ECUACIÓN 4: d = (v0 + vf)·t / 2
+                // Esta es la ecuación del desplazamiento usando velocidad media
+                if (v0 !== null && vf !== null && t !== null && d === null) {
+                    resultados.d = ((v0 + vf) * t) / 2;
+                    d = resultados.d;
+                    cambio = true;
+                }
+                else if (v0 !== null && vf !== null && d !== null && t === null) {
+                    // Despejamos: t = 2·d / (v0 + vf)
+                    if ((v0 + vf) !== 0) {
+                        resultados.t = (2 * d) / (v0 + vf);
+                        t = resultados.t;
+                        cambio = true;
+                    }
+                }
+
+                // Si no hubo cambios en esta iteración, salir del bucle
+                if (!cambio) break;
+                calculoRealizado = true;
+            }
+
+            // Verificar si se pudo calcular algo
+            if (!calculoRealizado) {
+                mostrarError('Por favor, ingresa al menos 3 valores conocidos para realizar los cálculos.');
+                return;
+            }
+
+            // Mostrar los resultados
+            mostrarResultados(resultados);
+        }
+
+        function mostrarResultados(res) {
+            // Crear el HTML con todos los resultados
+            let html = '<h3 style="color: #667eea; margin-bottom: 20px;">✅ Resultados Calculados</h3>';
+            
+            // Función auxiliar para formatear números a 4 decimales
+            const formatear = (num) => num !== null ? num.toFixed(4) : 'N/A';
+
+            // Mostrar cada resultado si fue calculado
+            if (res.v0 !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Velocidad Inicial (v₀):</span>
+                    <span class="result-value">${formatear(res.v0)} m/s</span>
+                </div>`;
+            }
+
+            if (res.vf !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Velocidad Final (vf):</span>
+                    <span class="result-value">${formatear(res.vf)} m/s</span>
+                </div>`;
+            }
+
+            if (res.a !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Aceleración (a):</span>
+                    <span class="result-value">${formatear(res.a)} m/s²</span>
+                </div>`;
+            }
+
+            if (res.t !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Tiempo (t):</span>
+                    <span class="result-value">${formatear(res.t)} s</span>
+                </div>`;
+            }
+
+            if (res.d !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Distancia (d):</span>
+                    <span class="result-value">${formatear(res.d)} m</span>
+                </div>`;
+            }
+
+            if (res.m !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Masa (m):</span>
+                    <span class="result-value">${formatear(res.m)} kg</span>
+                </div>`;
+            }
+
+            if (res.F !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Fuerza (F):</span>
+                    <span class="result-value">${formatear(res.F)} N</span>
+                </div>`;
+            }
+
+            if (res.peso !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Peso (P = m·g):</span>
+                    <span class="result-value">${formatear(res.peso)} N</span>
+                </div>`;
+            }
+
+            if (res.theta !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Ángulo de inclinación (θ):</span>
+                    <span class="result-value">${formatear(res.theta)}°</span>
+                </div>`;
+            }
+
+            if (res.aInclinada !== null) {
+                html += `<div class="result-item">
+                    <span class="result-label">Aceleración en plano inclinado:</span>
+                    <span class="result-value">${formatear(res.aInclinada)} m/s²</span>
+                </div>`;
+            }
+
+            // Mostrar el contenedor de resultados con animación
+            document.getElementById('results').innerHTML = html;
+            document.getElementById('results').classList.add('show');
+        }
+
+        function mostrarError(mensaje) {
+            // Mostrar mensaje de error
+            document.getElementById('error').textContent = '⚠️ ' + mensaje;
+            document.getElementById('error').classList.add('show');
+        }
+
+        function limpiar() {
+            // Limpiar todos los inputs
+            document.getElementById('v0').value = '';
+            document.getElementById('vf').value = '';
+            document.getElementById('a').value = '';
+            document.getElementById('t').value = '';
+            document.getElementById('d').value = '';
+            document.getElementById('m').value = '';
+            document.getElementById('F').value = '';
+            document.getElementById('theta').value = '';
+            
+            // Ocultar resultados y errores
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('error').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
